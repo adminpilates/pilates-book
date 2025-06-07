@@ -1,16 +1,17 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { format } from "date-fns";
 
 export async function GET() {
   try {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const weekAgo = new Date(today)
-    weekAgo.setDate(weekAgo.getDate() - 7)
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
 
     // Get total bookings
     const totalBookings = await prisma.booking.count({
@@ -19,29 +20,30 @@ export async function GET() {
           in: ["CONFIRMED", "PENDING"],
         },
       },
-    })
+    });
 
     // Get today's bookings
     const todayBookings = await prisma.booking.count({
       where: {
         session: {
           date: {
-            gte: today,
-            lt: tomorrow,
+            gte: new Date(format(today, "yyyy-MM-dd")),
+            lt: new Date(format(tomorrow, "yyyy-MM-dd")),
           },
         },
         status: {
           in: ["CONFIRMED", "PENDING"],
         },
       },
-    })
+    });
 
     // Get sessions with capacity info for utilization calculation
-    const sessions = await prisma.session.findMany({
+    const sessions = await prisma.pSession.findMany({
       where: {
         isActive: true,
         date: {
-          gte: today,
+          gte: new Date(format(today, "yyyy-MM-dd")),
+          lt: new Date(format(tomorrow, "yyyy-MM-dd")),
         },
       },
       include: {
@@ -58,26 +60,58 @@ export async function GET() {
           },
         },
       },
-    })
+    });
 
     // Calculate average capacity utilization
-    const totalCapacity = sessions.reduce((sum, session) => sum + session.sessionType.capacity, 0)
-    const totalBooked = sessions.reduce((sum, session) => sum + session._count.bookings, 0)
-    const averageCapacity = totalCapacity > 0 ? Math.round((totalBooked / totalCapacity) * 100) : 0
+    const totalCapacity = sessions.reduce(
+      (sum, session) => sum + session.sessionType.capacity,
+      0
+    );
+    const totalBooked = sessions.reduce(
+      (sum, session) => sum + session._count.bookings,
+      0
+    );
+    const averageCapacity =
+      totalCapacity > 0 ? Math.round((totalBooked / totalCapacity) * 100) : 0;
 
-    // Mock weekly revenue (you can implement actual revenue calculation)
-    const weeklyRevenue = totalBookings * 35 // Assuming $35 per session
+    // Calculate weekly revenue using the price of the session type and the confirmed bookings
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+    const confirmedBookings = await prisma.booking.count({
+      where: {
+        session: {
+          date: {
+            gte: new Date(format(startOfWeek, "yyyy-MM-dd")),
+            lt: new Date(format(endOfWeek, "yyyy-MM-dd")),
+          },
+        },
+        status: "CONFIRMED",
+      },
+    });
+
+    const weeklyRevenue =
+      confirmedBookings *
+      sessions.reduce(
+        (sum, session) => sum + Number(session.sessionType.price),
+        0
+      );
 
     const stats = {
       totalBookings,
       todayBookings,
       weeklyRevenue,
       averageCapacity,
-    }
+    };
 
-    return NextResponse.json(stats)
+    return NextResponse.json(stats);
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error)
-    return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 })
+    console.error("Error fetching dashboard stats:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch dashboard stats" },
+      { status: 500 }
+    );
   }
 }

@@ -22,6 +22,12 @@ export default function AdminDashboard() {
       return response.json();
     },
   });
+  const today = new Date();
+
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(endOfWeek.getDate() + 6);
 
   // Fetch recent bookings
   const { data: recentBookings = [], isLoading: bookingsLoading } = useQuery({
@@ -46,6 +52,21 @@ export default function AdminDashboard() {
       return response.json();
     },
   });
+
+  const thisWeekDate = `${new Date(
+    format(startOfWeek, "yyyy-MM-dd")
+  ).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })} - ${new Date(format(endOfWeek, "yyyy-MM-dd")).toLocaleDateString(
+    "id-ID",
+    {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }
+  )}`;
 
   if (statsLoading) {
     return (
@@ -104,9 +125,13 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${stats?.weeklyRevenue || 0}
+              {/* rupiah */}
+              {stats?.weeklyRevenue.toLocaleString("id-ID", {
+                style: "currency",
+                currency: "IDR",
+              })}
             </div>
-            <p className="text-xs text-muted-foreground">+12% from last week</p>
+            <p className="text-xs text-muted-foreground">{thisWeekDate}</p>
           </CardContent>
         </Card>
         <Card>
@@ -118,7 +143,7 @@ export default function AdminDashboard() {
             <div className="text-2xl font-bold">
               {stats?.averageCapacity || 0}%
             </div>
-            <p className="text-xs text-muted-foreground">Session utilization</p>
+            <p className="text-xs text-muted-foreground">{thisWeekDate}</p>
           </CardContent>
         </Card>
       </div>

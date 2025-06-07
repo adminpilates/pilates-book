@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const sessions = await prisma.session.findMany({
+    const sessions = await prisma.pSession.findMany({
       where: whereClause,
       include: {
         sessionType: true,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if session already exists at this time
-    const existingSession = await prisma.session.findUnique({
+    const existingSession = await prisma.pSession.findUnique({
       where: {
         sessionTypeId_date_time: {
           sessionTypeId: Number.parseInt(sessionTypeId),
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = await prisma.session.create({
+    const session = await prisma.pSession.create({
       data: {
         sessionTypeId: Number.parseInt(sessionTypeId),
         date: new Date(date),

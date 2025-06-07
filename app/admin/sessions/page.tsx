@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import DateRangePreview from "@/components/date-range-preview";
+import SummaryStats from "@/components/summary-stats";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,42 +23,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
+  CalendarDays,
   CalendarIcon,
   Clock,
-  Users,
-  Plus,
   Edit,
-  Trash2,
-  Loader2,
-  CalendarDays,
-  Search,
   Filter,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+  Users,
   X,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Calendar } from "@/components/ui/calendar";
-import SummaryStats from "@/components/summary-stats";
-import { format } from "date-fns";
-import DateRangePreview from "@/components/date-range-preview";
+import { useState } from "react";
 
 const daysOfWeek = [
-  { id: "monday", label: "Monday" },
-  { id: "tuesday", label: "Tuesday" },
-  { id: "wednesday", label: "Wednesday" },
-  { id: "thursday", label: "Thursday" },
-  { id: "friday", label: "Friday" },
-  { id: "saturday", label: "Saturday" },
-  { id: "sunday", label: "Sunday" },
+  { id: "senin", label: "Senin" },
+  { id: "selasa", label: "Selasa" },
+  { id: "rabu", label: "Rabu" },
+  { id: "kamis", label: "Kamis" },
+  { id: "jumat", label: "Jumat" },
+  { id: "sabtu", label: "Sabtu" },
+  { id: "minggu", label: "Minggu" },
 ];
 
 export default function SessionsPage() {
@@ -125,8 +118,6 @@ export default function SessionsPage() {
     },
     enabled: !!filters.startDate && !!filters.endDate,
   });
-
-  console.log("allSessions", allSessions);
 
   // Filter sessions based on search and session type
   const sessions = allSessions.filter((session: any) => {
@@ -294,11 +285,16 @@ export default function SessionsPage() {
           .toLocaleDateString("id-ID", { weekday: "long" })
           .toLowerCase();
 
+        console.log(dayName);
+
         if (newSession.selectedDays.includes(dayName)) {
           const curr = format(currentDate, "yyyy-MM-dd");
           const excludeDate = newSession.excludeDate.map((date) =>
             format(date, "yyyy-MM-dd")
           );
+
+          console.log(curr);
+          console.log(excludeDate);
 
           if (!excludeDate.includes(curr)) {
             sessionsData.push({
@@ -319,10 +315,9 @@ export default function SessionsPage() {
         time: newSession.time,
       });
     }
-
     return sessionsData;
   };
-
+  console.log(generateSessionsData());
   const handleAddSessions = () => {
     if (
       !newSession.sessionTypeId ||

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { BookingModal } from "@/components/booking-modal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,19 +19,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   Calendar,
   Clock,
-  Users,
-  Phone,
-  Loader2,
-  Search,
   Filter,
+  Loader2,
+  Phone,
+  Search,
+  Users,
   X,
 } from "lucide-react";
-import { BookingModal } from "@/components/booking-modal";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { useMemo, useState } from "react";
 
 export default function HomePage() {
   const [selectedSession, setSelectedSession] = useState<any>(null);

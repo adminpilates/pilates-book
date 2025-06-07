@@ -168,7 +168,6 @@ export function generateBookingConfirmationEmail(
                     <li>Comfortable, stretchy workout clothes</li>
                     <li>Water bottle to stay hydrated</li>
                     <li>Small towel</li>
-                    <li>Yoga mat (we have extras if needed)</li>
                     <li>Positive attitude and willingness to learn!</li>
                 </ul>
             </div>

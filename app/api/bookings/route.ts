@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if session exists and has available slots
-    const session = await prisma.session.findUnique({
+    const session = await prisma.pSession.findUnique({
       where: { id: sessionId },
       include: {
         sessionType: true,
@@ -277,7 +277,6 @@ async function sendBookingConfirmationEmail(booking: any) {
                 <li>Comfortable workout clothes</li>
                 <li>Water bottle</li>
                 <li>Towel</li>
-                <li>Yoga mat (if you have one)</li>
             </ul>
             
             <h3>Important Information:</h3>

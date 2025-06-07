@@ -1,6 +1,14 @@
-"use client"
+"use client";
 
-import { Calendar, Users, Settings, BarChart3, Home } from "lucide-react"
+import {
+  Calendar,
+  Users,
+  Settings,
+  BarChart3,
+  Home,
+  LogOutIcon,
+  User2Icon,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,8 +19,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import Link from "next/link"
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const menuItems = [
   {
@@ -35,9 +46,30 @@ const menuItems = [
     url: "/admin/session-types",
     icon: Settings,
   },
-]
+  {
+    title: "Users",
+    url: "/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Profile",
+    url: "/admin/profile",
+    icon: User2Icon,
+  },
+];
 
 export function AdminSidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: session, isPending } = authClient.useSession();
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.title === "Users") {
+      return session?.user.role === "admin" && !isPending;
+    }
+    return true;
+  });
+
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-6 py-4">
@@ -56,16 +88,26 @@ export function AdminSidebar() {
           <SidebarGroupLabel>Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {filteredMenuItems.map((item) => {
+                const isActive = pathname === item.url;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={cn(
+                        isActive &&
+                          "bg-primary text-primary-foreground rounded hover:bg-primary hover:text-primary-foreground"
+                      )}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -81,10 +123,29 @@ export function AdminSidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {/* Logout */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button
+                    onClick={() =>
+                      authClient.signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            router.push("/login");
+                          },
+                        },
+                      })
+                    }
+                  >
+                    <LogOutIcon className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
