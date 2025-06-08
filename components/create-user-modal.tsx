@@ -163,7 +163,7 @@ export function CreateUserModal({
                   <SelectValue placeholder="Select user role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="user">Staff</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
