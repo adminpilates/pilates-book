@@ -16,4 +16,5 @@ export const auth = betterAuth({
     minPasswordLength: 8,
   },
   plugins: [admin(), username()],
+  trustedOrigins: process.env.TRUSTED_ORIGINS?.split(",") || [],
 });

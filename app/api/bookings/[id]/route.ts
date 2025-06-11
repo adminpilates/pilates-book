@@ -142,7 +142,9 @@ async function sendCancellationNotificationEmail(booking: any) {
 
     // Send customer notification
     await fetch(
-      `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/send-email`,
+      `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/api/send-email`,
       {
         method: "POST",
         headers: {
@@ -212,7 +214,9 @@ async function sendCancellationNotificationEmail(booking: any) {
 
     const adminEmail = process.env.ADMIN_EMAIL || "admin@pilatesstudio.com";
     await fetch(
-      `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/send-email`,
+      `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/api/send-email`,
       {
         method: "POST",
         headers: {

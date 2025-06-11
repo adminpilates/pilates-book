@@ -141,6 +141,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log("Available slots:", availableSlots);
+
     // Check for duplicate booking (same email for same session)
     const existingBooking = await prisma.booking.findFirst({
       where: {
@@ -298,7 +300,9 @@ async function sendBookingConfirmationEmail(booking: any) {
 
     // Send email using fetch to your email API endpoint
     const response = await fetch(
-      `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/send-email`,
+      `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/api/send-email`,
       {
         method: "POST",
         headers: {
@@ -434,7 +438,9 @@ async function sendAdminNotificationEmail(booking: any) {
     // Send admin notification email
     const adminEmail = process.env.ADMIN_EMAIL || "admin@pilatesstudio.com";
     const response = await fetch(
-      `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/send-email`,
+      `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/api/send-email`,
       {
         method: "POST",
         headers: {

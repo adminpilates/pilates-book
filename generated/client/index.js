@@ -236,7 +236,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\Kerjaan\\Project\\pilates-booking2\\generated\\client",
+      "value": "D:\\Kerjaan\\Project\\pilates-book\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -250,7 +250,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Kerjaan\\Project\\pilates-booking2\\prisma\\schema.prisma",
+    "sourceFilePath": "D:\\Kerjaan\\Project\\pilates-book\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
