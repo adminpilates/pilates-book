@@ -102,86 +102,74 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if session exists and has available slots
-    const session = await prisma.pSession.findUnique({
-      where: { id: sessionId },
-      include: {
-        sessionType: true,
-        _count: {
-          select: {
-            bookings: {
-              where: {
-                status: {
-                  in: ["CONFIRMED", "PENDING"],
+    // Use transaction with isolation level to prevent race conditions
+    const booking = await prisma.$transaction(async (tx) => {
+      // Lock the session record first
+      const session = await tx.pSession.findUniqueOrThrow({
+        where: { id: sessionId },
+        include: {
+          sessionType: true,
+          _count: {
+            select: {
+              bookings: {
+                where: {
+                  status: {
+                    in: ["CONFIRMED", "PENDING"],
+                  },
                 },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
-    }
+      if (!session.isActive) {
+        throw new Error("Session is no longer available");
+      }
 
-    if (!session.isActive) {
-      return NextResponse.json(
-        { error: "Session is no longer available" },
-        { status: 400 }
-      );
-    }
+      const availableSlots =
+        session.sessionType.capacity - session._count.bookings;
+      if (availableSlots <= 0) {
+        throw new Error("Session is fully booked");
+      }
 
-    const availableSlots =
-      session.sessionType.capacity - session._count.bookings;
-    if (availableSlots <= 0) {
-      return NextResponse.json(
-        { error: "Session is fully booked" },
-        { status: 400 }
-      );
-    }
-
-    console.log("Available slots:", availableSlots);
-
-    // Check for duplicate booking (same email for same session)
-    const existingBooking = await prisma.booking.findFirst({
-      where: {
-        sessionId,
-        email,
-        status: {
-          in: ["CONFIRMED", "PENDING"],
-        },
-      },
-    });
-
-    if (existingBooking) {
-      return NextResponse.json(
-        { error: "You already have a booking for this session" },
-        { status: 409 }
-      );
-    }
-
-    // Create the booking
-    const booking = await prisma.booking.create({
-      data: {
-        sessionId,
-        fullName,
-        email,
-        phone,
-        emergencyContact,
-        emergencyPhone,
-        medicalConditions,
-        experience: experience || "BEGINNER",
-        specialRequests,
-        status: "PENDING",
-      },
-      include: {
-        session: {
-          include: {
-            sessionType: true,
+      // Check for duplicate booking
+      const existingBooking = await tx.booking.findFirst({
+        where: {
+          sessionId,
+          email,
+          status: {
+            in: ["CONFIRMED", "PENDING"],
           },
         },
-      },
+      });
+
+      if (existingBooking) {
+        throw new Error("You already have a booking for this session");
+      }
+
+      // Create the booking
+      return tx.booking.create({
+        data: {
+          sessionId,
+          fullName,
+          email,
+          phone,
+          emergencyContact,
+          emergencyPhone,
+          medicalConditions,
+          experience: experience || "BEGINNER",
+          specialRequests,
+          status: "PENDING",
+        },
+        include: {
+          session: {
+            include: {
+              sessionType: true,
+            },
+          },
+        },
+      });
     });
 
     // Send email notifications

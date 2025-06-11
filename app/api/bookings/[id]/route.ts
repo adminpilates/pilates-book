@@ -212,24 +212,24 @@ async function sendCancellationNotificationEmail(booking: any) {
 </html>
     `;
 
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@pilatesstudio.com";
-    await fetch(
-      `${
-        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-      }/api/send-email`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to: adminEmail,
-          subject: `Booking Cancelled: ${booking.fullName} - Slot Available`,
-          html: adminEmailContent,
-          type: "admin_cancellation",
-        }),
-      }
-    );
+    // const adminEmail = process.env.ADMIN_EMAIL || "admin@pilatesstudio.com";
+    // await fetch(
+    //   `${
+    //     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    //   }/api/send-email`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       to: adminEmail,
+    //       subject: `Booking Cancelled: ${booking.fullName} - Slot Available`,
+    //       html: adminEmailContent,
+    //       type: "admin_cancellation",
+    //     }),
+    //   }
+    // );
 
     console.log("Cancellation emails sent successfully");
   } catch (error) {
